@@ -1,6 +1,6 @@
 ## Easyconvert Readme
 
-EasyConvert is an accessibility-first, 100% client-side batch converter for JSON, CSV, and plain-text files
+Easyconvert is an accessibility-first, 100% client-side batch converter for JSON, CSV, and plain-text files
 
 ## How to use it
 
