@@ -1,17 +1,25 @@
-# EasyConvert
+## Easyconvert Readme
 
-EasyConvert is an accessibility-first, 100% client-side batch converter for JSON, CSV, and plain-text files.
+EasyConvert is an accessibility-first, 100% client-side batch converter for JSON, CSV, and plain-text files
 
-## Use it
+## How to use it
 
-Open `index.html` locally or publish the repository with GitHub Pages. Select one or more supported files, choose an output type, optionally enable image or figure inclusion when applicable, and choose Convert. Results are keyboard-friendly collapsible sections with copy and download actions.
-
-Supported output formats include Clean Text / Markdown, HTML, DOCX-compatible text, beautified JSON, and CSV. CSV input is parsed locally and HTML output uses an accessible table with a caption, column headers, and scoped cells.
-
+Open the GitHub pages URL. Its below the description (for mobile) and will allow you to use this tool on the web
+Note: You can also Click
+[here](https://www.2three1y.github.io/Easyconvert)
+# Directions
+1. Go to the link abbv
+2. Select one or more supported files from Google Drive, the files app for iOS etc. All providers should be supported
+3. Choose an output type. You can have your output become, HTML or Markdown, CSV, JSON, TXT or DOCX
+Note: Optionally enable image or figure inclusion when necessary
+Once done, Select the "Convert" button
+Note: Results are keyboard-friendly collapsible sections with copy and download actions. The actions are under a file actions heading
 ## Privacy and accessibility
 
-EasyConvert reads files with the browser File API and processes them in memory. Nothing is uploaded, transmitted, tracked, or sent to a server. There are no external dependencies or network requests. The interface uses ARIA landmarks, semantic headings and lists, live status announcements, accordion attributes, keyboard navigation, visible focus states, and responsive styling.
+Easyconvert reads files with the browser File API and processes them in memory. Nothing is uploaded, transmitted, tracked, or sent to a server. There are no external dependencies or network requests. The interface uses ARIA landmarks, semantic headings and lists, live status announcements, accordion attributes, keyboard navigation, visible focus states, and responsive styling
 
 ## License
 
-Provided as-is for personal use.
+Provided as-is for personal use
+# #Thank You :)
+Thank you for using this tool. I hope you like it
