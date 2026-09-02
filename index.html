@@ -9,7 +9,7 @@
     <main>
       <h1>Easyconvert</h1>
       <label for="files">Choose files</label>
-      <input id="files" type="file" multiple accept=".txt,.csv,.json,.zip,application/zip,application/x-zip-compressed">
+      <input id="files" type="file" multiple accept="*/*,.txt,.csv,.json,.zip,application/zip,application/x-zip-compressed">
       <p id="status" role="status" aria-live="polite">No files selected</p>
       <label for="format">Output format</label>
       <select id="format">
@@ -85,11 +85,15 @@
           convert.disabled = files.length === 0;
           status.textContent = files.length ? `${files.length} file${files.length === 1 ? '' : 's'} selected` : 'No files selected';
         }
+
         input.addEventListener('change', (event) => {
-          files = files.concat(Array.from(event.target.files || []));
+          const selectedFiles = event.target.files || [];
+          const normalized = Array.from(selectedFiles);
+          files = files.concat(normalized);
           event.target.value = '';
           refresh();
         });
+
         convert.addEventListener('click', async () => {
           convert.disabled = true;
           results.replaceChildren();
