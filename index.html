@@ -8,32 +8,23 @@
   <body>
     <main>
       <h1>Easyconvert</h1>
-
       <label for="files">Choose files</label>
-      <input
-        id="files"
-        type="file"
-        multiple
-        accept=".txt,.csv,.json,.zip,application/zip,application/x-zip-compressed"
-      >
-
+      <input id="files" type="file" multiple accept=".txt,.csv,.json,.zip,application/zip,application/x-zip-compressed">
       <p id="status" role="status" aria-live="polite">No files selected</p>
-
       <label for="format">Output format</label>
       <select id="format">
         <option value="txt">TXT / Markdown</option>
         <option value="docx">DOCX</option>
         <option value="zip">ZIP archive</option>
       </select>
-
       <button id="convert" type="button" disabled>Convert</button>
       <ul id="results" aria-live="polite"></ul>
     </main>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script>
       (() => {
         'use strict';
-
         const input = document.getElementById('files');
         const format = document.getElementById('format');
         const status = document.getElementById('status');
@@ -41,48 +32,90 @@
         const results = document.getElementById('results');
         let files = [];
 
-        function refresh() {
-          const count = files.length;
-          convert.disabled = count === 0;
-          status.textContent = count === 0
-            ? 'No files selected'
-            : `${count} file${count === 1 ? '' : 's'} selected`;
+        const escapeXml = (value) => String(value)
+          .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+
+        function makeParagraph(text, style) {
+          const safe = escapeXml(text || ' ');
+          const pStyle = style ? `<w:pPr><w:pStyle w:val="${style}"/></w:pPr>` : '';
+          return `<w:p>${pStyle}<w:r><w:t xml:space="preserve">${safe}</w:t></w:r></w:p>`;
         }
 
-        input.addEventListener('change', (event) => {
-          const selected = Array.from(event.target.files || []);
-          if (selected.length > 0) {
-            files = files.concat(selected);
+        // Build a complete DOCX OPC package, including all mandatory relationships.
+        async function createDocx(file) {
+          const text = await file.text();
+          const body = [makeParagraph(file.name, 'Heading1')];
+          for (const line of text.split(/\r?\n/)) {
+            const heading = line.match(/^(#{1,6})\s+(.*)$/);
+            body.push(heading
+              ? makeParagraph(heading[2], `Heading${heading[1].length}`)
+              : makeParagraph(line));
           }
-          refresh();
-          // Allow selecting the same file again later.
-          event.target.value = '';
-        });
 
+          const zip = new JSZip();
+          zip.file('[Content_Types].xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+  <Default Extension="xml" ContentType="application/xml"/>
+  <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
+  <Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>
+</Types>`);
+          zip.folder('_rels').file('.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
+</Relationships>`);
+          zip.folder('word').file('document.xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+  <w:body>${body.join('')}<w:sectPr><w:pgSz w:w="12240" w:h="15840"/><w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440"/></w:sectPr></w:body>
+</w:document>`);
+          zip.folder('word').folder('_rels').file('document.xml.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"></Relationships>`);
+          zip.folder('word').file('styles.xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:docDefaults><w:rPrDefault><w:rPr><w:sz w:val="22"/></w:rPr></w:rPrDefault></w:docDefaults>
+  <w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/></w:style>
+  <w:style w:type="paragraph" w:styleId="Heading1"><w:name w:val="heading 1"/><w:basedOn w:val="Normal"/><w:uiPriority w:val="9"/><w:qFormat/><w:pPr><w:keepNext/><w:keepLines/></w:pPr><w:rPr><w:b/><w:sz w:val="32"/></w:rPr></w:style>
+  <w:style w:type="paragraph" w:styleId="Heading2"><w:name w:val="heading 2"/><w:basedOn w:val="Normal"/><w:rPr><w:b/><w:sz w:val="26"/></w:rPr></w:style>
+</w:styles>`);
+          return zip.generateAsync({ type: 'blob', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+        }
+
+        function refresh() {
+          convert.disabled = files.length === 0;
+          status.textContent = files.length ? `${files.length} file${files.length === 1 ? '' : 's'} selected` : 'No files selected';
+        }
+        input.addEventListener('change', (event) => {
+          files = files.concat(Array.from(event.target.files || []));
+          event.target.value = '';
+          refresh();
+        });
         convert.addEventListener('click', async () => {
           convert.disabled = true;
           results.replaceChildren();
-          status.textContent = `Converting ${files.length} file${files.length === 1 ? '' : 's'} to ${format.value}...`;
-
-          const fragment = document.createDocumentFragment();
-          for (const file of files) {
-            const item = document.createElement('li');
-            item.textContent = `${file.name} (${file.size} bytes)`;
-            try {
-              const text = await file.text();
-              item.dataset.text = text;
-              item.textContent += ' — ready';
-            } catch (error) {
-              item.textContent += ' — could not be read';
-              console.error(`Unable to read ${file.name}`, error);
+          try {
+            for (const file of files) {
+              const item = document.createElement('li');
+              if (format.value === 'docx') {
+                const blob = await createDocx(file);
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `${file.name.replace(/\.[^.]+$/, '')}.docx`;
+                link.textContent = `Download ${link.download}`;
+                item.append(link);
+              } else {
+                item.textContent = `${file.name} — selected (${format.value})`;
+              }
+              results.append(item);
             }
-            fragment.appendChild(item);
+            status.textContent = `${files.length} file${files.length === 1 ? '' : 's'} processed as ${format.value}`;
+          } catch (error) {
+            status.textContent = 'Conversion failed';
+            console.error(error);
+          } finally {
+            convert.disabled = files.length === 0;
           }
-          results.appendChild(fragment);
-          status.textContent = `${files.length} file${files.length === 1 ? '' : 's'} processed as ${format.value}`;
-          convert.disabled = files.length === 0;
         });
-
         refresh();
       })();
     </script>
