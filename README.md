@@ -1,22 +1,29 @@
-# Claude Archive Reader
+# Claude Export Converter
 
-An accessibility-first, 100% client-side reader for Claude data exports.
+An accessibility-first, 100% client-side batch converter for Claude data exports.
 
 ## Use it
 
 1. Open `index.html` locally, or publish the repository with GitHub Pages.
-2. Choose the `conversations.json` file from a Claude export, or drag it into the load area.
-3. Select a conversation, optionally filter by title/message text or date, then copy or download its text.
+2. Choose one or more Claude export files, or drag and drop them into the upload area.
+3. Remove individual files if needed, select the target format, and choose Convert.
+4. Expand any converted file in the results accordion to preview, copy, or download it.
 
-The application expects Claude's exported array of conversation objects, including `uuid`, `name`, `created_at`, `updated_at`, and `chat_messages`. Each message may contain `sender`, `text`, and `created_at`.
+Supported output formats:
+
+- Clean Text / Markdown (`.txt`)
+- HTML (`.html`)
+- DOCX-compatible formatted document (`.docx`)
+- Beautified JSON (`.json`)
+- CSV metadata/table export (`.csv`)
 
 ## Privacy and offline behavior
 
-Parsing happens in memory with the browser File API. The file is never uploaded, sent to a server, or tracked. There are no external dependencies, network requests, cookies, analytics, or tracking scripts.
+Files are read with the browser File API and processed in memory. They are never uploaded, sent to a server, or tracked. There are no external dependencies, network requests, cookies, analytics, or tracking scripts.
 
 ## Accessibility
 
-The interface uses semantic headings and lists, ARIA landmarks, live status announcements, keyboard-friendly controls, visible focus indicators, high contrast, responsive layout, and clear message labels for screen readers and Braille displays.
+The interface includes ARIA landmarks, semantic headings and lists, strict accordion attributes (`aria-expanded` and `aria-controls`), live announcements for file changes and conversion completion, keyboard navigation, visible high-contrast focus states, and responsive layout.
 
 ## License
 
