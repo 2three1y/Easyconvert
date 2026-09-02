@@ -2,21 +2,90 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Easyconvert</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+      body{font:16px system-ui;max-width:900px;margin:auto;padding:1rem}
+      button,select,input{font:inherit;padding:.5rem;margin:.25rem}
+      li{margin:.35rem 0}.remove{margin-left:.5rem}.status{min-height:1.5em}
+    </style>
 </head>
 <body>
     <h1>Easyconvert</h1>
     <input type="file" id="fileInput" multiple>
     <div id="file-list">No files selected.</div>
-    <label>Output format</label>
+    <label for="format">Output format</label>
     <select id="format">
-        <option>TXT / Markdown</option>
-        <option>DOCX</option>
-        <option>ZIP archive</option>
+        <option value="txt">TXT / Markdown</option>
+        <option value="docx">DOCX</option>
+        <option value="zip">ZIP archive</option>
     </select>
     <label><input type="checkbox" id="singleFile"> Export as single merged file (when possible)</label>
     <button type="button" id="convert">Convert</button>
-    <button type="button" id="export">Export</button>
+    <button type="button" id="export" disabled>Export</button>
     <button type="button" id="clear">Clear all</button>
+    <p id="status" class="status" role="status" aria-live="polite">No files selected.</p>
+<script>
+(() => {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const DOCX = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+  const ZIP = 'application/zip';
+  let files = Object.freeze([]), output = Object.freeze([]), busy = false;
+  const escapeXml = value => String(value ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/'/g,'&apos;');
+  function render() {
+    if (busy) return;
+    const list = $('file-list');
+    list.replaceChildren();
+    if (!files.length) { list.textContent = 'No files selected.'; }
+    else {
+      const ul = document.createElement('ul');
+      files.forEach((file, index) => {
+        const li = document.createElement('li');
+        li.append(document.createTextNode(file.name));
+        const remove = document.createElement('button');
+        remove.type = 'button'; remove.className = 'remove'; remove.textContent = 'Remove';
+        remove.onclick = () => { if (!busy) { files = Object.freeze(files.filter((_, i) => i !== index)); render(); } };
+        li.append(remove); ul.append(li);
+      });
+      list.append(ul);
+    }
+    $('export').disabled = !output.length;
+    $('status').textContent = files.length ? `${files.length} file${files.length === 1 ? '' : 's'} selected` : 'No files selected.';
+  }
+  async function readFile(file) { return { name: file.name, content: await file.text() }; }
+  function download(name, data, type) {
+    const blob = data instanceof Blob ? data : new Blob([data], {type});
+    const file = new File([blob], name, {type});
+    if (navigator.share && navigator.canShare && navigator.canShare({files:[file]})) {
+      navigator.share({files:[file], title:name}).catch(error => { if (error.name !== 'AbortError') iframeDownload(blob); });
+      return;
+    }
+    iframeDownload(blob);
+    function iframeDownload(value) {
+      const url = URL.createObjectURL(value), frame = document.createElement('iframe');
+      frame.setAttribute('aria-hidden','true'); frame.tabIndex = -1;
+      Object.assign(frame.style, {position:'fixed',width:'1px',height:'1px',border:'0',opacity:'0',pointerEvents:'none',left:'-9999px'});
+      frame.src = url; document.body.append(frame);
+      setTimeout(() => { frame.remove(); URL.revokeObjectURL(url); }, 30000);
+    }
+  }
+  async function makeDocx(markdown) {
+    if (typeof JSZip === 'undefined') throw Error('DOCX library failed to load');
+    const body = markdown.split(/\r?\n/).map(line => `<w:p>${/^#\s+/.test(line) ? '<w:pPr><w:pStyle w="Heading1"/></w:pPr>' : ''}<w:r><w:t xml:space="preserve">${escapeXml(line.replace(/^#\s+/, '') || ' ')}</w:t></w:r></w:p>`).join('');
+    const zip = new JSZip();
+    zip.file('[Content_Types].xml','<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>');
+    zip.file('_rels/.rels','<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>');
+    zip.file('word/document.xml',`<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>${body}<w:sectPr/></w:body></w:document>`);
+    return zip.generateAsync({type:'arraybuffer'});
+  }
+  $('fileInput').onchange = event => { if (!busy) { files = Object.freeze(files.concat(Array.from(event.target.files || []))); render(); } };
+  $('convert').onclick = async event => { event.preventDefault(); if (busy || !files.length) return; busy = true; try { const result = []; for (const file of files.slice()) result.push(await readFile(file)); output = Object.freeze(result.map(item => Object.freeze(item))); $('status').textContent = 'Conversion complete.'; } catch (error) { $('status').textContent = `Conversion failed: ${error.message}`; } finally { busy = false; render(); } };
+  $('export').onclick = async event => { event.preventDefault(); if (busy || !output.length) return; busy = true; const fileSnapshot = Object.freeze(files.slice()), snapshot = Object.freeze(output.map(item => Object.freeze({name:item.name,content:item.content}))); try { const format = $('format').value; if ($('singleFile').checked && format === 'docx') { const markdown = snapshot.map(item => `# ${item.name}\n\n${item.content}`).concat('# Thank you for using Easyconvert').join('\n\n'); download('Easyconvert-merged.docx', await makeDocx(markdown), DOCX); } else if ($('singleFile').checked) { const text = snapshot.map(item => `# ${item.name}\n\n${item.content}`).concat('# Thank you for using Easyconvert').join('\n\n'); download(`Easyconvert-merged.${format === 'txt' ? 'txt' : format}`, text, 'text/plain'); } else { const zip = new JSZip(); snapshot.forEach(item => zip.file(item.name, item.content)); download('Easyconvert-bundle.zip', await zip.generateAsync({type:'arraybuffer'}), ZIP); } $('status').textContent = `Export complete (${fileSnapshot.length} file${fileSnapshot.length === 1 ? '' : 's'}).`; } catch (error) { console.error(error); $('status').textContent = 'Export failed; files preserved.'; } finally { busy = false; render(); } };
+  $('clear').onclick = () => { if (!busy) { files = Object.freeze([]); output = Object.freeze([]); render(); } };
+  render();
+})();
+</script>
 </body>
 </html>
