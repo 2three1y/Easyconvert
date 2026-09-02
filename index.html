@@ -1,53 +1,90 @@
 <!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Easyconvert</title>
+  </head>
+  <body>
+    <main>
+      <h1>Easyconvert</h1>
 
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width">
-  <title>Easyconvert
+      <label for="files">Choose files</label>
+      <input
+        id="files"
+        type="file"
+        multiple
+        accept=".txt,.csv,.json,.zip,application/zip,application/x-zip-compressed"
+      >
 
-<body>
-  <h1>Easyconvert
-  <input id="files" type="file" multiple accept=".txt,.csv,.json,.zip,application/zip,application/x-zip-compressed">
-  <p id="status" role="status" aria-live="polite">No files selected
-  <select id="format">
-    <option value="txt">TXT / Markdown
-    <option value="docx">DOCX
-    <option value="zip">ZIP archive
-  
-  <button id="convert" disabled>Convert
-  <ul id="results">
-  <script>
-    (() => {
-      const input = document.getElementById('files');
-      const status = document.getElementById('status');
-      const convert = document.getElementById('convert');
-      const results = document.getElementById('results');
-      let files = [];
+      <p id="status" role="status" aria-live="polite">No files selected</p>
 
-      function refresh() {
-        const n = files.length;
-        convert.disabled = n === 0;
-        status.textContent = n 
-          ? n + ' file' + (n === 1 ? '' : 's') + ' selected' 
-          : 'No files selected';
-        console.debug('Easyconvert file count:', n);
-      }
+      <label for="format">Output format</label>
+      <select id="format">
+        <option value="txt">TXT / Markdown</option>
+        <option value="docx">DOCX</option>
+        <option value="zip">ZIP archive</option>
+      </select>
 
-      input.addEventListener('change', e => {
-        const selected = Array.from(e.target.files || []);
-        if (selected.length) files = files.concat(selected);
-        refresh();
-        try { e.target.value = ''; } catch {}
-      });
+      <button id="convert" type="button" disabled>Convert</button>
+      <ul id="results" aria-live="polite"></ul>
+    </main>
 
-      convert.addEventListener('click', async () => {
-        results.replaceChildren(
-          ...await Promise.all(files.map(async file => {
+    <script>
+      (() => {
+        'use strict';
+
+        const input = document.getElementById('files');
+        const format = document.getElementById('format');
+        const status = document.getElementById('status');
+        const convert = document.getElementById('convert');
+        const results = document.getElementById('results');
+        let files = [];
+
+        function refresh() {
+          const count = files.length;
+          convert.disabled = count === 0;
+          status.textContent = count === 0
+            ? 'No files selected'
+            : `${count} file${count === 1 ? '' : 's'} selected`;
+        }
+
+        input.addEventListener('change', (event) => {
+          const selected = Array.from(event.target.files || []);
+          if (selected.length > 0) {
+            files = files.concat(selected);
+          }
+          refresh();
+          // Allow selecting the same file again later.
+          event.target.value = '';
+        });
+
+        convert.addEventListener('click', async () => {
+          convert.disabled = true;
+          results.replaceChildren();
+          status.textContent = `Converting ${files.length} file${files.length === 1 ? '' : 's'} to ${format.value}...`;
+
+          const fragment = document.createDocumentFragment();
+          for (const file of files) {
             const item = document.createElement('li');
-            item.textContent = file.name;
-            item.dataset.text = await file.text();
-            return item;
-          }))
-        );
-      });
-    })();
+            item.textContent = `${file.name} (${file.size} bytes)`;
+            try {
+              const text = await file.text();
+              item.dataset.text = text;
+              item.textContent += ' — ready';
+            } catch (error) {
+              item.textContent += ' — could not be read';
+              console.error(`Unable to read ${file.name}`, error);
+            }
+            fragment.appendChild(item);
+          }
+          results.appendChild(fragment);
+          status.textContent = `${files.length} file${files.length === 1 ? '' : 's'} processed as ${format.value}`;
+          convert.disabled = files.length === 0;
+        });
+
+        refresh();
+      })();
+    </script>
+  </body>
+</html>
