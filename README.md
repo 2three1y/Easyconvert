@@ -5,8 +5,9 @@ Easyconvert is an accessibility-first, 100% client-side batch converter for JSON
 ## How to use it
 
 Open the GitHub pages URL. Its below the description (for mobile) and will allow you to use this tool on the web
+
 Note: You can also Click
-[here](https://www.2three1y.github.io/Easyconvert)
+[Here](https://www.2three1y.github.io/Easyconvert)
 # Directions
 1. Go to the link abbv
 2. Select one or more supported files from Google Drive, the files app for iOS etc. All providers should be supported
