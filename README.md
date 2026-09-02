@@ -1,29 +1,16 @@
-# Claude Export Converter
+# EasyConvert
 
-An accessibility-first, 100% client-side batch converter for Claude data exports.
+EasyConvert is an accessibility-first, 100% client-side batch converter for Claude exports, CSV files, and plain-text files.
 
 ## Use it
 
-1. Open `index.html` locally, or publish the repository with GitHub Pages.
-2. Choose one or more Claude export files, or drag and drop them into the upload area.
-3. Remove individual files if needed, select the target format, and choose Convert.
-4. Expand any converted file in the results accordion to preview, copy, or download it.
+Open `index.html` locally or publish the repository with GitHub Pages. Select one or more `.json`, `.csv`, `.txt`, or `.log` files, choose the target format, and convert. Results are keyboard-friendly collapsible sections with copy and download actions. Multi-file conversions can be downloaded as a ZIP containing `THANK_YOU.txt`.
 
-Supported output formats:
+Supported output formats include Clean Text / Markdown, HTML, DOCX-compatible formatted text, beautified JSON, and CSV. CSV input is parsed locally with quoted-field and newline handling; HTML output includes an accessible table with a caption, column headers, and scoped cells.
 
-- Clean Text / Markdown (`.txt`)
-- HTML (`.html`)
-- DOCX-compatible formatted document (`.docx`)
-- Beautified JSON (`.json`)
-- CSV metadata/table export (`.csv`)
+## Privacy and accessibility
 
-## Privacy and offline behavior
-
-Files are read with the browser File API and processed in memory. They are never uploaded, sent to a server, or tracked. There are no external dependencies, network requests, cookies, analytics, or tracking scripts.
-
-## Accessibility
-
-The interface includes ARIA landmarks, semantic headings and lists, strict accordion attributes (`aria-expanded` and `aria-controls`), live announcements for file changes and conversion completion, keyboard navigation, visible high-contrast focus states, and responsive layout.
+EasyConvert reads files with the browser File API and processes them in memory. Nothing is uploaded, transmitted, tracked, or sent to a server. There are no external dependencies or network requests. The interface uses ARIA landmarks, semantic headings and lists, live status announcements, strict accordion attributes, keyboard navigation, visible focus states, and responsive high-contrast styling.
 
 ## License
 
