@@ -1,1 +1,53 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Easyconvert</title></head><body><h1>Easyconvert</h1><input id="files" type="file" multiple accept="*/*,.txt,.csv,.json,.zip,application/zip,application/x-zip-compressed"><p id="status" role="status" aria-live="polite">No files selected.</p><select id="format"><option value="txt">TXT / Markdown</option><option value="docx">DOCX</option><option value="zip">ZIP archive</option></select><button id="convert" disabled>Convert</button><ul id="results"></ul><script>(()=>{const input=document.getElementById('files'),status=document.getElementById('status'),convert=document.getElementById('convert'),results=document.getElementById('results');let files=[];function refresh(){const n=files.length;convert.disabled=n===0;status.textContent=n?`${n} file${n===1?'':'s'} selected`:'No files selected';console.debug('Easyconvert file count:',n)}function normalize(v){if(!v)return[];if(v instanceof File)return[v];if(typeof FileList!=='undefined'&&v instanceof FileList)return Array.from(v);if(Array.isArray(v))return v;return typeof v.length==='number'?Array.from(v):[v]}input.addEventListener('change',e=>{const picked=normalize(e.target?.files||input.files);files=files.concat(picked.filter(Boolean));refresh();try{input.value=''}catch{}});convert.addEventListener('click',async()=>{results.replaceChildren(...await Promise.all(files.map(async f=>{const li=document.createElement('li');li.textContent=f.name;li.dataset.text=await f.text();return li})))})})()</script></body></html>
+<!doctype html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>Easyconvert
+
+<body>
+  <h1>Easyconvert
+  <input id="files" type="file" multiple accept="/,.txt,.csv,.json,.zip,application/zip,application/x-zip-compressed">
+  <p id="status" role="status" aria-live="polite">No files selected
+  <select id="format">
+    <option value="txt">TXT / Markdown
+    <option value="docx">DOCX
+    <option value="zip">ZIP archive
+  
+  <button id="convert" disabled>Convert
+  <ul id="results">
+  <script>
+    (() => {
+      const input = document.getElementById('files');
+      const status = document.getElementById('status');
+      const convert = document.getElementById('convert');
+      const results = document.getElementById('results');
+      let files = [];
+
+      function refresh() {
+        const n = files.length;
+        convert.disabled = n === 0;
+        status.textContent = n 
+          ? n + ' file' + (n === 1 ? '' : 's') + ' selected' 
+          : 'No files selected';
+        console.debug('Easyconvert file count:', n);
+      }
+
+      input.addEventListener('change', e => {
+        const selected = Array.from(e.target.files || []);
+        if (selected.length) files = files.concat(selected);
+        refresh();
+        try { e.target.value = ''; } catch {}
+      });
+
+      convert.addEventListener('click', async () => {
+        results.replaceChildren(
+          ...await Promise.all(files.map(async file => {
+            const item = document.createElement('li');
+            item.textContent = file.name;
+            item.dataset.text = await file.text();
+            return item;
+          }))
+        );
+      });
+    })();
