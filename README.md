@@ -23,6 +23,6 @@ Easyconvert reads files with the browser File API and processes them in memory. 
 
 ## License
 
-Provided as-is for personal use
+This project is licensed under the MIT License. See the LICENSE file for details.
 # #Thank You :)
 Thank you for using this tool. I hope you like it
