@@ -1,1 +1,181 @@
-<!doctype html><html><head><meta charset="utf-8"><title>Easyconvert</title><script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script></head><body><h1>Easyconvert</h1><input id="input" type="file" multiple><select id="format"><option value="txt">TXT / Markdown</option><option value="docx">DOCX</option><option value="zip">ZIP archive</option><option value="pdf">PDF</option><option value="json">JSON</option><option value="html">HTML</option></select><button id="convert">Convert</button><button id="download-all">Download all</button><div id="list">No files selected.</div><p id="status"></p><script>(()=>{let files=[],results=[],format='txt',esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');const $=x=>document.getElementById(x),save=(n,d,t)=>{let a=document.createElement('a'),u=URL.createObjectURL(new Blob([d],{type:t}));a.href=u;a.download=n;a.click();setTimeout(()=>URL.revokeObjectURL(u),1e3)};async function docx(text){let z=new JSZip(),body=text.split(/\r?\n/).map(x=>'<w:p><w:r><w:t xml:space="preserve">'+esc(x)+'</w:t></w:r></w:p>').join(''),xml='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>'+body+'<w:sectPr/></w:body></w:document>';if(!body||!xml.includes('<w:t'))throw Error('DOCX text generation failed');z.file('[Content_Types].xml','<?xml version="1.0"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>');z.file('_rels/.rels','<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>');z.file('word/_rels/document.xml.rels','<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"/>');z.file('word/document.xml',xml);return z.generateAsync({type:'blob'})}async function convert(f){let raw=await f.text();if(format==='docx')return{data:await docx(raw),type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',preview:raw};return{data:format==='json'?JSON.stringify({filename:f.name,content:raw},null,2):raw,type:'text/plain',preview:raw}}function render(){let l=$('list');l.replaceChildren();files.forEach((f,i)=>{let r=document.createElement('section'),b=document.createElement('button'),c=document.createElement('button'),d=document.createElement('button'),p=document.createElement('pre');b.textContent=f.name;b.onclick=()=>p.hidden=!p.hidden;c.textContent='Copy';c.onclick=()=>navigator.clipboard.writeText(results[i]?.preview||'');d.textContent='Download';d.onclick=()=>{let x=results[i];if(x)save(f.name.replace(/\.[^.]+$/,'')+'.'+(format==='docx'?'docx':format==='json'?'json':'txt'),x.data,x.type)};p.hidden=true;p.textContent=results[i]?.preview||'Not converted yet.';r.append(b,c,d,p);l.append(r)})}$('input').onchange=e=>{files.push(...e.target.files);render()};$('convert').onclick=async()=>{format=$('format').value;results=[];try{for(let f of files)results.push(await convert(f));render();$('status').textContent='Conversion complete as '+format.toUpperCase()}catch(e){$('status').textContent='Conversion failed: '+e.message}};$('download-all').onclick=async()=>{try{let z=new JSZip();results.forEach((x,i)=>z.file(files[i].name.replace(/\.[^.]+$/,'')+'.'+format,x.data));save('Easyconvert-converted-files.zip',await z.generateAsync({type:'blob'}),'application/zip')}catch(e){$('status').textContent='Download failed: '+e.message}};render()})()</script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="description" content="Accessible, offline Claude data export reader and file converter that runs entirely in your browser.">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#102a43">
+<title>Easyconvert</title>
+<link rel="stylesheet" href="css/easyconvert.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to main content</a>
+<a class="skip-link" href="#conv-search" id="skip-search" hidden>Skip to conversation search</a>
+
+<header class="site-header">
+  <div class="wrap header-row">
+    <div>
+      <h1>Easyconvert</h1>
+      <p class="sub">Read your Claude data export and convert files privately in your browser. Nothing is uploaded, tracked, or sent anywhere, and it works offline.</p>
+    </div>
+    <div class="sound-controls" role="group" aria-label="Sound">
+      <button type="button" id="sound-toggle" class="secondary on-dark" aria-pressed="true">Sounds on</button>
+      <label class="volume"><span>Volume</span> <input type="range" id="volume" min="0" max="100" step="5" value="70" aria-valuetext="70 percent"></label>
+    </div>
+  </div>
+</header>
+
+<main id="main" tabindex="-1">
+  <section class="card" aria-labelledby="add-title">
+    <h2 id="add-title">1. Add files</h2>
+    <div id="drop" class="drop">
+      <p><strong>Choose one or more files</strong>, or drag and drop them here.</p>
+      <label for="file-input" class="button">Choose files</label>
+      <input id="file-input" class="visually-hidden" type="file" multiple aria-describedby="file-help">
+      <p id="file-help" class="hint">A Claude export (the .zip, or conversations.json) opens in the reader. Text, Markdown, CSV, JSON, HTML and Word files can be converted. Files are read locally and kept in memory only.</p>
+    </div>
+  </section>
+
+  <section id="reader" class="card" aria-labelledby="reader-title" hidden>
+    <h2 id="reader-title">Your Claude export</h2>
+    <div id="load-progress" class="progress-row" hidden>
+      <label for="load-bar" id="load-label">Opening export</label>
+      <progress id="load-bar" max="100" value="0"></progress>
+    </div>
+    <p id="export-summary" class="summary"></p>
+
+    <div class="reader-layout">
+      <section id="list-pane" class="list-pane" aria-labelledby="list-title">
+        <h3 id="list-title">Conversations</h3>
+        <form id="filters" class="filters" role="search" aria-label="Conversations" onsubmit="return false">
+          <div class="field">
+            <label for="conv-search">Search</label>
+            <input type="search" id="conv-search" autocomplete="off" spellcheck="false" aria-describedby="result-count">
+          </div>
+          <div class="field">
+            <label for="search-scope">Search in</label>
+            <select id="search-scope">
+              <option value="all">Titles and messages</option>
+              <option value="title">Titles only</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="sort">Sort by</label>
+            <select id="sort">
+              <option value="new">Newest first</option>
+              <option value="old">Oldest first</option>
+              <option value="long">Most messages</option>
+              <option value="az">Title A to Z</option>
+            </select>
+          </div>
+          <fieldset class="dates">
+            <legend>Started between</legend>
+            <div class="field"><label for="date-from">From</label><input type="date" id="date-from"></div>
+            <div class="field"><label for="date-to">To</label><input type="date" id="date-to"></div>
+          </fieldset>
+          <button type="button" id="clear-filters" class="secondary">Clear filters</button>
+        </form>
+        <p id="result-count" class="status"></p>
+        <ul id="conv-list" class="conv-list"></ul>
+        <button type="button" id="show-more" class="secondary wide" hidden>Show more</button>
+        <div class="bulk">
+          <h4 id="bulk-title">Download every conversation</h4>
+          <div class="row">
+            <div class="field grow"><label for="bulk-format">Format</label>
+              <select id="bulk-format"><option value="md">Markdown</option><option value="txt">Plain text</option><option value="html">HTML</option><option value="docx">Word (DOCX)</option><option value="pdf">PDF</option><option value="json">JSON</option></select>
+            </div>
+            <button type="button" id="bulk-download" aria-describedby="bulk-note">Download ZIP</button>
+          </div>
+          <p id="bulk-note" class="hint">One file per conversation that matches the current filters.</p>
+        </div>
+      </section>
+
+      <section id="conv-view" class="conv-view" aria-labelledby="conv-title" tabindex="-1" hidden>
+        <div class="conv-head">
+          <button type="button" id="back" class="secondary">Back to conversations</button>
+          <h3 id="conv-title"></h3>
+          <p id="conv-meta" class="meta"></p>
+          <div class="conv-tools" role="group" aria-labelledby="conv-tools-label">
+            <span id="conv-tools-label" class="tools-label">Download this conversation:</span>
+            <button type="button" data-export="md" class="secondary">Markdown</button>
+            <button type="button" data-export="txt" class="secondary">Text</button>
+            <button type="button" data-export="html" class="secondary">HTML</button>
+            <button type="button" data-export="docx" class="secondary">Word</button>
+            <button type="button" data-export="pdf" class="secondary">PDF</button>
+            <button type="button" id="print" class="secondary">Print or save as PDF</button>
+            <button type="button" id="copy-conv" class="secondary">Copy all</button>
+          </div>
+          <div id="find-bar" class="find-bar" hidden>
+            <span id="find-status"></span>
+            <button type="button" id="find-prev" class="secondary small">Previous match</button>
+            <button type="button" id="find-next" class="secondary small">Next match</button>
+          </div>
+        </div>
+        <div id="messages" class="messages"></div>
+      </section>
+    </div>
+
+    <section id="projects" class="projects" aria-labelledby="projects-title" hidden>
+      <h3 id="projects-title">Projects</h3>
+      <div id="project-list"></div>
+    </section>
+  </section>
+
+  <section id="format-section" class="card" aria-labelledby="format-title" hidden>
+    <h2 id="format-title">2. Choose a format</h2>
+    <div class="row">
+      <div class="field grow">
+        <label for="format">Convert to</label>
+        <select id="format">
+          <option value="docx">Word document (.docx)</option>
+          <option value="pdf">PDF (.pdf)</option>
+          <option value="html">Web page (.html)</option>
+          <option value="md">Markdown (.md)</option>
+          <option value="txt">Plain text (.txt)</option>
+          <option value="json">JSON (.json)</option>
+          <option value="csv">CSV (.csv)</option>
+        </select>
+      </div>
+      <button type="button" id="convert">Convert files</button>
+    </div>
+  </section>
+
+  <section id="results-section" class="card" aria-labelledby="results-title" hidden>
+    <h2 id="results-title">3. Converted files</h2>
+    <div class="progress-row">
+      <label for="overall-bar" id="overall-label">Overall progress</label>
+      <progress id="overall-bar" max="100" value="0"></progress>
+      <span id="overall-text" class="hint" aria-hidden="true"></span>
+    </div>
+    <div class="actions">
+      <button type="button" id="download-all" disabled>Download all (ZIP)</button>
+      <button type="button" id="clear-files" class="secondary">Remove all files</button>
+    </div>
+    <ul id="results" class="results"></ul>
+  </section>
+
+  <div id="status" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true"></div>
+  <div id="toast" class="visible-status" aria-hidden="true"></div>
+  <div id="alert" class="visually-hidden" role="alert"></div>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <p>Thank you for using this tool. I hope you like it :)</p>
+    <p class="hint">Easyconvert by <a href="https://github.com/2three1y/Easyconvert">2three1y</a> · MIT License · Everything happens on your device.</p>
+  </div>
+</footer>
+
+<script src="js/zip.js"></script>
+<script src="js/markdown.js"></script>
+<script src="js/docx.js"></script>
+<script src="js/pdf.js"></script>
+<script src="js/sound.js"></script>
+<script src="js/claude.js"></script>
+<script src="js/convert.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
