@@ -24,7 +24,7 @@ h1 { font-size: clamp(2rem, 5vw, 3.25rem); margin: .1rem 0; }
 h2 { margin-top: 0; }
 a { color: var(--blue); }
 
-.skip-link { position: absolute; left: .75rem; top: -4rem; z-index: 10; background: var(--focus); color: #111; font-weight: 800; padding: .75rem 1rem; border-radius: 0 0 8px 8px; text-decoration: none; }
+.skip-link { position: absolute; left: .75rem; top: -4rem; z-index: 100; background: var(--focus); color: #111; font-weight: 800; padding: .75rem 1rem; border-radius: 0 0 8px 8px; text-decoration: none; }
 .skip-link:focus { top: 0; }
 .visually-hidden { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 

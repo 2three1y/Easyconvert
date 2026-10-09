@@ -10,10 +10,68 @@
 <meta name="theme-color" content="#102a43">
 <title>Easyconvert</title>
 <link rel="stylesheet" href="css/easyconvert.css">
+<link rel="icon" href="data:,">
+<style id="ps-style">
+/* Photosensitivity notice + Calm mode (no flashing; motion off under Calm mode or the system Reduce Motion setting) */
+#ps-notice{box-sizing:border-box;display:block;width:100%;margin:0;padding:.7rem 1rem .6rem;background:#fff4c2;color:#1b1b1b;border-bottom:2px solid #1b1b1b;font:1rem/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;text-align:left;position:relative;z-index:60;min-height:0}
+#ps-notice *{box-sizing:border-box;color:#1b1b1b;font-family:inherit;letter-spacing:normal;text-transform:none;text-shadow:none;-webkit-text-fill-color:#1b1b1b}
+#ps-notice h2{font-size:1.05rem;font-weight:700;line-height:1.3;margin:0 0 .2rem;padding:0;border:0;background:none}
+#ps-notice p{margin:0 0 .45rem;padding:0;max-width:62rem;font-size:1rem}
+#ps-notice .ps-row{display:flex;flex-wrap:wrap;gap:.5rem .75rem;align-items:flex-start}
+#ps-notice button,#ps-notice summary{font:600 1rem/1.2 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;cursor:pointer;background:#fff;border:2px solid #1b1b1b;border-radius:8px;padding:.55rem .85rem;min-height:44px;margin:0;box-shadow:none;width:auto;transform:none}
+#ps-notice button[aria-pressed="true"]{background:#1b1b1b;color:#fff;-webkit-text-fill-color:#fff}
+#ps-notice button[aria-pressed="true"] *{color:#fff;-webkit-text-fill-color:#fff}
+#ps-notice summary{display:inline-block;list-style-position:inside}
+#ps-notice details{flex:1 1 16rem;min-width:0}
+#ps-notice details > div{margin-top:.5rem;padding:.6rem .8rem;background:#fffdf3;border:1px solid #1b1b1b;border-radius:8px;max-width:62rem}
+#ps-notice ul{margin:.2rem 0 .3rem 1.2rem;padding:0}
+#ps-notice li{margin:.2rem 0}
+#ps-notice a{text-decoration:underline}
+#ps-notice :focus-visible{outline:3px solid #1b1b1b;outline-offset:2px;box-shadow:0 0 0 6px #fff4c2}
+#ps-notice .ps-sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+html.calm *,html.calm *::before,html.calm *::after{animation-duration:.001ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition-duration:.001ms!important;transition-delay:0s!important;scroll-behavior:auto!important}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition-duration:.001ms!important;transition-delay:0s!important;scroll-behavior:auto!important}}
+html.ps-hidden *,html.ps-hidden *::before,html.ps-hidden *::after{animation-play-state:paused!important}
+</style>
+<script id="ps-script">
+/* Calm mode: ON unless the visitor turns it off (remembered on this device). The system Reduce Motion setting always wins. */
+(function(){var K="calm-mode",d=document.documentElement,mq=window.matchMedia?window.matchMedia("(prefers-reduced-motion: reduce)"):{matches:false};
+function pref(){try{return localStorage.getItem(K)!=="off";}catch(e){return true;}}
+window.calmMode=function(){return !!mq.matches||pref();};
+function sync(say){var on=window.calmMode();d.classList.toggle("calm",on);var b=document.getElementById("ps-calm"),s=document.getElementById("ps-state"),st=document.getElementById("ps-status");
+if(b)b.setAttribute("aria-pressed",String(on));if(s)s.textContent=on?"on":"off";
+if(say&&st){st.textContent="";setTimeout(function(){st.textContent=on?(mq.matches&&!pref()?"Motion stays off because your device's Reduce Motion setting is on.":"Calm mode on. Motion is off."):"Calm mode off. Motion is on.";},50);}
+try{document.dispatchEvent(new CustomEvent("calmchange",{detail:{calm:on}}));}catch(e){}}
+window.__psSync=sync;sync(false);
+if(mq.addEventListener)mq.addEventListener("change",function(){sync(false);});else if(mq.addListener)mq.addListener(function(){sync(false);});
+document.addEventListener("visibilitychange",function(){d.classList.toggle("ps-hidden",document.hidden);});
+document.addEventListener("click",function(e){var b=e.target&&e.target.closest&&e.target.closest("#ps-calm");if(!b)return;var on=b.getAttribute("aria-pressed")==="true";try{localStorage.setItem(K,on?"off":"on");}catch(x){}sync(true);});
+document.addEventListener("DOMContentLoaded",function(){sync(false);});})();
+</script>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to main content</a>
 <a class="skip-link" href="#conv-search" id="skip-search" hidden>Skip to conversation search</a>
+<section id="ps-notice" aria-labelledby="ps-title">
+  <h2 id="ps-title">Photosensitivity notice</h2>
+  <p>This site has no flashing or moving content and follows the three-flash safety limit.</p>
+  <div class="ps-row">
+  <details>
+    <summary>More details</summary>
+    <div>
+    <ul>
+      <li>What was checked: every animation, transition and script on this page, plus a frame-by-frame screen recording measured against the WCAG 2.3.1 limits (no more than three flashes in any second, including red flashes).</li>
+      <li>Nothing on this site moves or blinks on its own.</li>
+      <li>Your device's Reduce Motion setting is honoured: if anything is ever added that moves, it stays still when that setting is on.</li>
+      <li>This site doesn't play sound on its own.</li>
+      <li>This was tested with automated measurement, not a clinical tool like PEAT, and not on every device.</li>
+    </ul>
+    <p>If anything here ever flickers, please <a href="https://github.com/2three1y/Easyconvert/issues">report it on GitHub</a>.</p>
+    </div>
+  </details>
+  </div>
+  <p id="ps-status" class="ps-sr" role="status" aria-live="polite"></p>
+</section>
 
 <header class="site-header">
   <div class="wrap header-row">
