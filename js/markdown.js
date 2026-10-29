@@ -85,7 +85,7 @@
       if (r.code) return '<code>' + t + '</code>';
       if (r.bold) return '<strong>' + t + '</strong>';
       if (r.italic) return '<em>' + t + '</em>';
-      if (r.href) { var h = safeHref(r.href); return h ? '<a href="' + esc(h) + '" rel="noopener noreferrer" target="_blank">' + t + '<span class="visually-hidden"> (opens in a new tab)</span></a>' : t; }
+      if (r.href) { var h = safeHref(r.href); return h ? '<a href="' + esc(h) + '" rel="noopener noreferrer" target="_blank">' + t + '</a>' : t; }
       return t;
     }).join('');
   }
@@ -97,7 +97,7 @@
       switch (b.type) {
         case 'h': var lv = Math.min(6, b.level + headingBase - 1); return '<h' + lv + '>' + inlineHTML(b.text) + '</h' + lv + '>';
         case 'code':
-          return '<div class="code-block"><div class="code-head"><span>' + esc(b.lang || 'code') + '</span><button type="button" class="copy-code">Copy code<span class="visually-hidden">' + (b.lang ? ' (' + esc(b.lang) + ')' : '') + '</span></button></div>' +
+          return '<div class="code-block"><div class="code-head"><span>' + esc(b.lang || 'code') + '</span><button type="button" class="copy-code">Copy code</button></div>' +
             '<pre tabindex="0" aria-label="' + esc((b.lang ? b.lang + ' ' : '') + 'code block') + '"><code>' + esc(b.text) + '</code></pre></div>';
         case 'quote': return '<blockquote>' + toHTML(parse(b.text), headingBase) + '</blockquote>';
         case 'list':

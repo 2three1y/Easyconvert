@@ -137,7 +137,6 @@
           '<button type="button" class="secondary" data-act="remove">Remove</button>' +
         '</div>' +
         '<div id="prev-' + it.id + '" hidden><pre tabindex="0" aria-label="Preview of ' + esc(it.file.name) + '"></pre></div>';
-      li.querySelectorAll('[data-act] , .actions button').forEach(function (b) { b.setAttribute('aria-describedby', 'file-name-' + it.id); });
       resultsEl.appendChild(li);
     });
     $('download-all').disabled = !items.some(function (x) { return x.state === 'done'; });
@@ -410,7 +409,7 @@
         '<div class="body">' + (m.parts.length ? m.parts.map(partHTML).join('') : '<p class="meta">(empty message)</p>') +
         m.attachments.map(function (at) { return '<details class="extra"><summary>Attachment: ' + esc(at.name) + (at.size ? ' (' + EC.claude.fmtSize(at.size) + ')' : '') + '</summary>' + (at.content ? '<pre tabindex="0">' + esc(at.content) + '</pre>' : '<p class="meta">No text was included for this attachment.</p>') + '</details>'; }).join('') +
         (m.files.length ? '<p class="meta">Files: ' + m.files.map(function (f) { return esc(f.name); }).join(', ') + ' (not included in the export)</p>' : '') + '</div>' +
-        '<div class="msg-actions"><button type="button" class="secondary small" data-copy-msg="' + i + '">Copy message<span class="visually-hidden"> ' + (i + 1) + ' from ' + who + '</span></button></div>';
+        '<div class="msg-actions"><button type="button" class="secondary small" data-copy-msg="' + i + '">Copy message</button></div>';
       frag.appendChild(a);
     });
     box.appendChild(frag);
