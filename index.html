@@ -92,7 +92,7 @@ document.addEventListener("DOMContentLoaded",function(){sync(false);});})();
     <div id="drop" class="drop">
       <p><strong>Choose one or more files</strong>, or drag and drop them here.</p>
       <label for="file-input" class="button">Choose files</label>
-      <input id="file-input" class="visually-hidden" type="file" multiple aria-describedby="file-help">
+      <input id="file-input" class="visually-hidden" type="file" multiple>
       <p id="file-help" class="hint">A Claude export (the .zip, or conversations.json) opens in the reader. Text, Markdown, CSV, JSON, HTML and Word files can be converted. Files are read locally and kept in memory only.</p>
     </div>
   </section>
@@ -111,7 +111,7 @@ document.addEventListener("DOMContentLoaded",function(){sync(false);});})();
         <form id="filters" class="filters" role="search" aria-label="Conversations" onsubmit="return false">
           <div class="field">
             <label for="conv-search">Search</label>
-            <input type="search" id="conv-search" autocomplete="off" spellcheck="false" aria-describedby="result-count">
+            <input type="search" id="conv-search" autocomplete="off" spellcheck="false">
           </div>
           <div class="field">
             <label for="search-scope">Search in</label>

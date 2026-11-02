@@ -128,7 +128,7 @@
         '<label class="visually-hidden" for="bar-' + it.id + '">Progress for ' + esc(it.file.name) + '</label>' +
         '<progress id="bar-' + it.id + '" max="100" value="' + it.progress + '"></progress>' +
         '<p class="state ' + (it.state === 'done' ? 'ok' : it.state === 'error' ? 'bad' : '') + '" id="state-' + it.id + '">' + esc(stateText(it)) + '</p>' +
-        '<h4 id="actions-' + it.id + '">File actions<span class="visually-hidden"> for ' + esc(it.file.name) + '</span></h4>' +
+        '<h4 id="actions-' + it.id + '">File actions</h4>' +
         '<div class="actions" role="group" aria-labelledby="actions-' + it.id + '">' +
           '<button type="button" class="secondary" data-act="preview" aria-expanded="false" aria-controls="prev-' + it.id + '"' + (it.state !== 'done' ? ' disabled' : '') + '>Preview</button>' +
           '<button type="button" class="secondary" data-act="copy"' + (it.state !== 'done' || !it.text ? ' disabled' : '') + '>Copy text</button>' +

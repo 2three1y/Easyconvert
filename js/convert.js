@@ -116,7 +116,7 @@
   }
 
   function htmlDocument(title, blocks, lang) {
-    return '<!doctype html>\n<html lang="' + EC.md.esc(lang || 'en') + '">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>' + EC.md.esc(title) + '</title>\n<meta name="generator" content="Easyconvert">\n<style>\n' +
+    return '<!doctype html>\n<html lang="' + EC.md.esc(!lang || lang === 'en' ? 'en-US' : lang) + '">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>' + EC.md.esc(title) + '</title>\n<meta name="generator" content="Easyconvert">\n<style>\n' +
       'body{margin:0;background:#eef2f5;color:#17202a;font:17px/1.6 system-ui,-apple-system,sans-serif}main{max-width:46rem;margin:auto;padding:1.5rem;background:#fff;min-height:100vh}h1,h2,h3{line-height:1.25;color:#102a43}h2{color:#075985;border-top:1px solid #b8c5cf;padding-top:1rem}' +
       'pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#f1f5f9;border:1px solid #b8c5cf;border-radius:6px;padding:.85rem;font-size:.92em}code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}p code{background:#f1f5f9;padding:.1em .3em;border-radius:4px}' +
       'blockquote{margin:0;border-left:4px solid #b8c5cf;padding-left:1rem;color:#334e68}.meta{color:#52606d}table{border-collapse:collapse;width:100%}th,td{border:1px solid #b8c5cf;padding:.45rem;text-align:left;vertical-align:top}th{background:#e8f0f5}a{color:#075985}' +
